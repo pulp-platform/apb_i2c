@@ -233,11 +233,6 @@ module i2c_master_bit_ctrl (
           cSCL <= 2'b00;
           cSDA <= 2'b00;
       end
-      else if (rst)
-      begin
-          cSCL <= 2'b00;
-          cSDA <= 2'b00;
-      end
       else
       begin
           cSCL <= {cSCL[0],scl_i};

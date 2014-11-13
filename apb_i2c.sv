@@ -1,6 +1,6 @@
 
 
-`include "i2c_master_defines.v"
+`include "i2c_master_defines.sv"
 
 `define REG_CLK_PRESCALER 3'b000 //BASEADDR+0x00
 `define REG_CTRL          3'b001 //BASEADDR+0x04
@@ -36,6 +36,8 @@ module i2c_master_top#(
 	// variable declarations
 	//
 
+	logic  [3:0] s_apb_addr;
+
 	// registers
 	reg  [15:0] r_pre; // clock prescale register
 	reg  [ 7:0] r_ctrl;  // control register
@@ -64,6 +66,7 @@ module i2c_master_top#(
 	// module body
 	//
 
+	assign s_apb_addr = PADDR[5:2];
 
     always @ (posedge HCLK or negedge HRESETn) begin
         if(~HRESETn) begin
@@ -74,7 +77,7 @@ module i2c_master_top#(
         end
         else if (PSEL && PENABLE && PWRITE)
             begin
-                if (done | i2c_al)
+                if (s_done | i2c_al)
                     r_cmd[7:4] <= 4'h0;           // clear command bits when done
                                                      // or when aribitration lost
                 r_cmd[2:1] <= 2'b0;               // reserved bits
@@ -88,18 +91,18 @@ module i2c_master_top#(
                         r_tx = PWDATA[7:0];
                     `REG_CMD:
                     begin
-                        if(core_en)
+                        if(s_core_en)
                             r_cmd = PWDATA[7:0];
                     end
                 endcase
             end
         else
         begin
-            if (done | i2c_al)
-                cr[7:4] <= 4'h0;           // clear command bits when done
+            if (s_done | i2c_al)
+                r_cmd[7:4] <= 4'h0;           // clear command bits when done
                                               // or when aribitration lost
-            cr[2:1] <= 2'b0;               // reserved bits
-            cr[0]   <= 1'b0;               // clear IRQ_ACK bit
+            r_cmd[2:1] <= 2'b0;               // reserved bits
+            r_cmd[0]   <= 1'b0;               // clear IRQ_ACK bit
         end
     end //always
 
@@ -124,12 +127,12 @@ module i2c_master_top#(
 
 
 	// decode command register
-	wire sta  = r_cr[7];
-	wire sto  = r_cr[6];
-	wire rd   = r_cr[5];
-	wire wr   = r_cr[4];
-	wire ack  = r_cr[3];
-	wire iack = r_cr[0];
+	wire sta  = r_cmd[7];
+	wire sto  = r_cmd[6];
+	wire rd   = r_cmd[5];
+	wire wr   = r_cmd[4];
+	wire ack  = r_cmd[3];
+	wire iack = r_cmd[0];
 
 	// decode control register
 	assign core_en = r_ctrl[7];
@@ -174,11 +177,11 @@ module i2c_master_top#(
 	        al       <= i2c_al | (al & ~sta);
 	        rxack    <= irxack;
 	        tip      <= (rd | wr);
-	        irq_flag <= (done | i2c_al | irq_flag) & ~iack; // interrupt request flag is always generated
+	        irq_flag <= (s_done | i2c_al | irq_flag) & ~iack; // interrupt request flag is always generated
 	    end
 
 	// generate interrupt request signals
-	always @(posedge wb_clk_i or negedge HRESETn)
+	always @(posedge HCLK or negedge HRESETn)
 	  if (!HRESETn)
 	    interrupt_o <= 1'b0;
 	  else
