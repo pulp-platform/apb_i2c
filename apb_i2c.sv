@@ -9,7 +9,7 @@
 `define REG_TX            3'b100 //BASEADDR+0x10
 `define REG_CMD           3'b101 //BASEADDR+0x14
 
-module i2c_master_top#(
+module apb_i2c#(
         parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
         ) (
     input  logic                      HCLK,
@@ -143,7 +143,7 @@ module i2c_master_top#(
 		.clk      ( HCLK         ),
 		.nReset   ( HRESETn      ),
 		.ena      ( core_en      ),
-		.clk_cnt  ( prer         ),
+		.clk_cnt  ( r_pre        ),
 		.start    ( sta          ),
 		.stop     ( sto          ),
 		.read     ( rd           ),
