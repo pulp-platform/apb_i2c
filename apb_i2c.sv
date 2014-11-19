@@ -78,10 +78,10 @@ module apb_i2c#(
         else if (PSEL && PENABLE && PWRITE)
             begin
                 if (s_done | i2c_al)
-                    r_cmd[7:4] <= 4'h0;           // clear command bits when done
+                    r_cmd[7:4] = 4'h0;           // clear command bits when done
                                                      // or when aribitration lost
-                r_cmd[2:1] <= 2'b0;               // reserved bits
-                r_cmd[0]   <= 1'b0;               // clear IRQ_ACK bit
+                r_cmd[2:1] = 2'b0;               // reserved bits
+                r_cmd[0]   = 1'b0;               // clear IRQ_ACK bit
                 case (s_apb_addr)
                     `REG_CLK_PRESCALER:
                         r_pre = PWDATA[15:0];
@@ -99,10 +99,10 @@ module apb_i2c#(
         else
         begin
             if (s_done | i2c_al)
-                r_cmd[7:4] <= 4'h0;           // clear command bits when done
+                r_cmd[7:4] = 4'h0;           // clear command bits when done
                                               // or when aribitration lost
-            r_cmd[2:1] <= 2'b0;               // reserved bits
-            r_cmd[0]   <= 1'b0;               // clear IRQ_ACK bit
+            r_cmd[2:1] = 2'b0;               // reserved bits
+            r_cmd[0]   = 1'b0;               // clear IRQ_ACK bit
         end
     end //always
 
@@ -135,14 +135,14 @@ module apb_i2c#(
 	wire iack = r_cmd[0];
 
 	// decode control register
-	assign core_en = r_ctrl[7];
-	assign ien     = r_ctrl[6];
+	assign s_core_en = r_ctrl[7];
+	assign s_ien     = r_ctrl[6];
 
 	// hookup byte controller block
 	i2c_master_byte_ctrl byte_controller (
 		.clk      ( HCLK         ),
 		.nReset   ( HRESETn      ),
-		.ena      ( core_en      ),
+		.ena      ( s_core_en    ),
 		.clk_cnt  ( r_pre        ),
 		.start    ( sta          ),
 		.stop     ( sto          ),
@@ -150,8 +150,8 @@ module apb_i2c#(
 		.write    ( wr           ),
 		.ack_in   ( ack          ),
 		.din      ( r_tx         ),
-		.cmd_ack  ( done         ),
-		.ack_out  ( irxack       ),
+		.cmd_ack  ( s_done       ),
+		.ack_out  ( s_irxack     ),
 		.dout     ( s_rx         ),
 		.i2c_busy ( i2c_busy     ),
 		.i2c_al   ( i2c_al       ),
@@ -175,7 +175,7 @@ module apb_i2c#(
 	  else
 	    begin
 	        al       <= i2c_al | (al & ~sta);
-	        rxack    <= irxack;
+	        rxack    <= s_irxack;
 	        tip      <= (rd | wr);
 	        irq_flag <= (s_done | i2c_al | irq_flag) & ~iack; // interrupt request flag is always generated
 	    end
@@ -185,7 +185,7 @@ module apb_i2c#(
 	  if (!HRESETn)
 	    interrupt_o <= 1'b0;
 	  else
-	    interrupt_o <= irq_flag && ien; // interrupt signal is only generated when IEN (interrupt enable bit is set)
+	    interrupt_o <= irq_flag && s_ien; // interrupt signal is only generated when IEN (interrupt enable bit is set)
 
 	// assign status register bits
 	assign s_status[7]   = rxack;

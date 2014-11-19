@@ -177,7 +177,7 @@ module i2c_master_bit_ctrl (
 
 
     // state machine variable
-    reg [17:0] c_state; // synopsys enum_state
+    reg [17:0] c_state; 
 
     //
     // module body
