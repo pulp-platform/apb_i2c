@@ -121,6 +121,8 @@ module apb_i2c#(
                 PRDATA = {24'h0,r_tx};
             `REG_CMD:
                 PRDATA = {24'h0,r_cmd};
+            default:
+                PRDATA = 'h0;
         endcase
     end
     
