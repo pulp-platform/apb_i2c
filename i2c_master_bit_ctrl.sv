@@ -136,7 +136,8 @@
 
 `include "i2c_master_defines.sv"
 
-module i2c_master_bit_ctrl (
+module i2c_master_bit_ctrl
+(
     input             clk,      // system clock
     input             nReset,   // asynchronous active low reset
     input             ena,      // core enable signal
@@ -214,7 +215,7 @@ module i2c_master_bit_ctrl (
       else if (slave_wait)
       begin
           cnt    <= cnt;
-          clk_en <= 1'b0;    
+          clk_en <= 1'b0;
       end
       else
       begin
@@ -535,7 +536,7 @@ module i2c_master_bit_ctrl (
               endcase
       end
 
-
+    //FIXME ANTONIO CHECK
     // assign scl and sda output (always gnd)
     assign scl_o = 1'b0;
     assign sda_o = 1'b0;
