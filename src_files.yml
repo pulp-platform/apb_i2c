@@ -1,4 +1,7 @@
 apb_i2c:
+  incdirs: [
+    .,
+  ]
   files: [
     apb_i2c.sv,
     i2c_master_bit_ctrl.sv,
